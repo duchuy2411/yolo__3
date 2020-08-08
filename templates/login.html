@@ -4,20 +4,133 @@
     <meta charset="UTF-8">
     <title>Flask Intro - login page</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="../static/css.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-</head>
+    <link rel="stylesheet" type="text/css" href="../static/filecss.css">
+    <l<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <body>
+    <div class="jumbotron" style="background-color: #1FB264;
+                                  padding: 10px;
+                                  color: lavenderblush;
+                                  ">
+        <h1 class="display-4" style="
+        color: wheat;
+        ;">Đồ án cuối kì: Học thống kê</h1>
+        <h2>GV: Ngô Minh Nhựt</h2>
+        <hr class="my-4">
+        <ul class="list-group">
+          <li class="list-group-item"><h4>Hồng Như Ngọc</h4></li>
+          <li class="list-group-item"><h4>Tôn Kim Ái</h4></li>
+          <li class="list-group-item"><h4>Huỳnh Đức Huy</h4></li>
+        </ul>
+    </div>
+    <!--
+    <div style="margin: 50px;">
     <form method=post enctype=multipart/form-data>
         <input type=file name=file>
         <input type=submit value=Upload>
     </form>
-    <div class="container" style="margin-top: 50px;">
-    {% if source %}
-     <img src="../static/result/{{source}}">
-    {% endif %}
     </div>
+   
+   <div> -->
+     <div style="
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        margin-top: 30px;
+    ">
+    <div>
+    <form method=post enctype="multipart/form-data">
+    <div class="file-upload">
+      <button class="file-upload-btn" type="button" onclick="$('.file-upload-input').trigger( 'click' )">Add Image</button>
+
+      <div class="image-upload-wrap">
+        <input class="file-upload-input" name=file type='file' onchange="readURL(this);" accept="image/*" />
+        <div class="drag-text">
+          <h3>Drag and drop a file or select add Image</h3>
+        </div>
+      </div>
+      <div class="file-upload-content">
+        <img class="file-upload-image" src="#" alt="your image" />
+        <div class="image-title-wrap">
+          <button type="button" onclick="removeUpload()" class="remove-image">Remove <span class="image-title">Uploaded Image</span></button>
+        </div>
+        <div class="image-title-wrap">
+            <button type="submit" value=Upload class="go-image">Detec <span class="image-title">Uploaded Image</span></button>
+          </div>
+      </div>
+    </div>
+    </form>
+     </div>
+    <div class="container" style="display: grid;
+                                  padding: 15px;
+                                  margin-left: 30px;
+                                  background-color: white;">
+        {% if source %}
+         <img src="../static/result/{{source}}" style="max-width: 600px;">
+        {% endif %}
+        {% if df != 0  %}
+        {% if rate < 0.1 %}
+        <h1 style="color:rgb(192, 238, 122);
+                  background-color: #6bbe27;
+                  text-align: center;
+                  padding: 5px;"
+        ">Safe</h1>
+        {% endif %}
+        {% endif %}
+        {% if rate >= 0.1 %}
+        <h1 style="color: #f80000;
+                  background-color: #ff9999;
+                  text-align: center;
+                  padding: 5px;"
+                  >Dangerous</h1>
+        {% endif %}
+        {% if df != 0 %}
+        <h3 style="color: rgb(224, 241, 225);
+                  background-color: #06a75c;
+                  padding: 5px;">Rate: {{ rate }}</h3>
+        <h3 style="color: coral; 
+                  background-color: #ecbdbd;
+                  padding: 5px;">Mask: {{ mask }}</h3>
+        <h3 style="color: coral; 
+                  background-color: #ecbdbd;
+                  padding: 5px;">Nomask: {{ nomask }}</h3>
+        {% endif %}
+    </div>
+   </div>
+    <script type="text/javascript">
+    function readURL(input) {
+  if (input.files && input.files[0]) {
+
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+      $('.image-upload-wrap').hide();
+
+      $('.file-upload-image').attr('src', e.target.result);
+      $('.file-upload-content').show();
+
+      $('.image-title').html(input.files[0].name);
+    };
+
+    reader.readAsDataURL(input.files[0]);
+
+  } else {
+    removeUpload();
+  }
+}
+
+function removeUpload() {
+  $('.file-upload-input').replaceWith($('.file-upload-input').clone());
+  $('.file-upload-content').hide();
+  $('.image-upload-wrap').show();
+}
+$('.image-upload-wrap').bind('dragover', function () {
+        $('.image-upload-wrap').addClass('image-dropping');
+    });
+    $('.image-upload-wrap').bind('dragleave', function () {
+        $('.image-upload-wrap').removeClass('image-dropping');
+});
+</script>
 </body>
+
 </html>

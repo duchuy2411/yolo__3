@@ -1,4 +1,5 @@
 work/
 yolov3.weights
 yolov3_5800.weights
+yolov3_custom_train_4000.weights
 .git

@@ -7,10 +7,16 @@ import random
 import os
 
 UPLOAD_FOLDER = './upload'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
-
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'pdf'}
+noti = ""
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Load Yolo
+net = cv2.dnn.readNet("yolov3_custom_train_4000.weights", "yolov3_5800.cfg")
+
+# Name custom object
+classes = open("yolo.names").read().strip().split("\n")
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -18,18 +24,18 @@ def allowed_file(filename):
 
 @app.route('/')
 def welcome():
-    return redirect('/upload')
+    return redirect('/yolo')
  
- 
-@app.route('/home')
-def home():
-    return 'Login success!'
- 
- 
+
 # Route for handling the login page logic
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/yolo', methods=['GET', 'POST'])
 def upload_file():
+    defaults = 0
     nan = ""
+    noti = ''
+    mask = 0
+    nomask = 0
+    rate = 0.0
     if request.method == 'POST':
         print("Post")
         # check if the post request has the file part
@@ -48,12 +54,8 @@ def upload_file():
             os.makedirs(os.path.join(app.instance_path, 'htmlfi'), exist_ok=True)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))) 
             nan = file.filename
-            # Load Yolo
-            net = cv2.dnn.readNet("yolov3.weights", "yolov3.cfg")
 
-            # Name custom object
-
-            classes = open("coco.names").read().strip().split("\n")
+            # Here
 
             # Images path
             images_path = glob.glob(r"./upload/"+file.filename)
@@ -102,16 +104,27 @@ def upload_file():
                             class_ids.append(class_id)
                 indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
                 font = cv2.FONT_HERSHEY_PLAIN
+                ss = ""
                 for i in range(len(boxes)):
                     if i in indexes:
                         x, y, w, h = boxes[i]
                         label = str(classes[class_ids[i]])
+                        if label == 'face_mask':
+                            mask = mask + 1
+                        if label == 'no_face_mask':
+                            nomask = nomask + 1
+                        rate = nomask/(mask+nomask)
+                        if rate > 0.2:
+                            ss = "Alert!!!"
+                        defaults = -1
                         color = colors[class_ids[i]]
                         cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
-                        cv2.putText(img, label, (x, y + 30), font, 0.9, color, 2)
+                        cv2.putText(img, label, (x, y + 30), font, 2, color, 2)
+                print(mask ," " ,nomask,"\n")
+                noti = ss
                 cv2.imwrite("./static/result/"+ file.filename,img)
 
-    return render_template('login.html', source=nan)
+    return render_template('login.html', source=nan, df=defaults, noti=noti, rate=rate, mask=mask, nomask=nomask)
  
  
 if __name__ == '__main__':
